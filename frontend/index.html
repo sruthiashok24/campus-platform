@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CampusHub</title>
+<style>
+  :root {
+    --bg:#07070d; --panel:#0f0f1c; --panel2:#151528; --line:#2a2a4d; --ink:#ecebff; --muted:#9494bd;
+    --cyan:#00e5ff; --pink:#ff2bd6; --violet:#8b5cff; --green:#39ff9c; --red:#ff4d6d; --amber:#ffc53d;
+  }
+  * { box-sizing:border-box; }
+  html { color-scheme: dark; }
+  body {
+    margin:0; min-height:100vh; color:var(--ink);
+    font:16px/1.55 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+    background:
+      radial-gradient(900px 500px at 8% -10%, rgba(139,92,255,.20), transparent 60%),
+      radial-gradient(800px 450px at 100% 0%, rgba(255,43,214,.13), transparent 60%),
+      radial-gradient(700px 400px at 50% 110%, rgba(0,229,255,.10), transparent 60%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+  a { color:var(--cyan); }
+  h1,h2,h3 { margin:0; letter-spacing:.2px; }
+  .muted { color:var(--muted); }
+  .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+
+  /* ---------- top bar ---------- */
+  .top { position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:16px; padding:14px 24px;
+         background:rgba(7,7,13,.82); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
+  .brand { font-weight:800; letter-spacing:3px; font-size:1.25rem; color:var(--ink); text-shadow:0 0 14px rgba(0,229,255,.55); }
+  .brand span { color:var(--cyan); }
+  .grow { flex:1; }
+  .who { text-align:right; line-height:1.2; }
+  .who small { color:var(--muted); }
+  .pill { display:inline-block; padding:2px 10px; border-radius:999px; font-size:.75rem; font-weight:700; letter-spacing:.5px;
+          border:1px solid currentColor; text-transform:uppercase; }
+  .pill.admin { color:var(--pink); box-shadow:0 0 10px rgba(255,43,214,.35); }
+  .pill.student { color:var(--cyan); box-shadow:0 0 10px rgba(0,229,255,.35); }
+
+  /* ---------- layout ---------- */
+  main { max-width:1080px; margin:0 auto; padding:24px 16px 60px; }
+  .tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px; }
+  .tab { background:var(--panel); color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:8px 18px; cursor:pointer; font:inherit; }
+  .tab:hover { color:var(--ink); border-color:var(--violet); }
+  .tab.on { color:#07070d; background:linear-gradient(90deg,var(--cyan),var(--violet)); border-color:transparent; font-weight:700; box-shadow:0 0 18px rgba(0,229,255,.35); }
+  .grid { display:grid; gap:16px; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); }
+  .card { background:linear-gradient(180deg,var(--panel2),var(--panel)); border:1px solid var(--line); border-radius:14px; padding:18px; transition:.2s; }
+  .card:hover { border-color:rgba(0,229,255,.55); box-shadow:0 0 0 1px rgba(0,229,255,.25), 0 0 28px rgba(0,229,255,.12); }
+  .card h3 { font-size:1.1rem; margin:8px 0 4px; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:20px; }
+  .panel h2 { font-size:1.05rem; margin-bottom:14px; color:var(--cyan); text-shadow:0 0 12px rgba(0,229,255,.4); }
+  .meta { display:flex; flex-wrap:wrap; gap:6px 14px; font-size:.88rem; color:var(--muted); margin:6px 0 12px; }
+
+  .badge { display:inline-block; font-size:.72rem; font-weight:700; letter-spacing:.6px; text-transform:uppercase; padding:2px 10px; border-radius:6px; border:1px solid currentColor; }
+  .b-Hackathon { color:var(--pink); } .b-Webinar { color:var(--cyan); } .b-Seminar { color:var(--violet); }
+  .b-Workshop { color:var(--green); } .b-Competition { color:var(--amber); } .b-Event { color:var(--muted); }
+
+  .bar { height:6px; background:#1b1b36; border-radius:6px; overflow:hidden; margin:6px 0 4px; }
+  .bar i { display:block; height:100%; background:linear-gradient(90deg,var(--green),var(--cyan)); box-shadow:0 0 10px var(--cyan); }
+  .bar.hot i { background:linear-gradient(90deg,var(--amber),var(--pink)); box-shadow:0 0 10px var(--pink); }
+
+  /* ---------- forms ---------- */
+  form { display:grid; gap:12px; }
+  .two { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); }
+  label { display:grid; gap:4px; font-size:.85rem; color:var(--muted); }
+  input, select, textarea {
+    font:inherit; color:var(--ink); background:#0a0a16; border:1px solid var(--line); border-radius:8px; padding:10px 12px; width:100%;
+  }
+  input:focus, select:focus, textarea:focus { outline:none; border-color:var(--cyan); box-shadow:0 0 0 3px rgba(0,229,255,.18); }
+  input::placeholder { color:#5d5d86; }
+  .btn { font:inherit; cursor:pointer; border-radius:8px; padding:9px 18px; border:1px solid var(--line); background:var(--panel2); color:var(--ink); }
+  .btn:hover { border-color:var(--cyan); }
+  .btn:focus-visible, .tab:focus-visible, a:focus-visible { outline:2px solid var(--cyan); outline-offset:2px; }
+  .btn.primary { background:linear-gradient(90deg,var(--cyan),var(--violet)); color:#07070d; font-weight:700; border:0; box-shadow:0 0 18px rgba(0,229,255,.35); }
+  .btn.primary:hover { box-shadow:0 0 26px rgba(139,92,255,.6); }
+  .btn.pink { background:linear-gradient(90deg,var(--pink),var(--violet)); color:#fff; font-weight:700; border:0; box-shadow:0 0 18px rgba(255,43,214,.35); }
+  .btn.danger { color:var(--red); border-color:rgba(255,77,109,.5); background:transparent; }
+  .btn.danger:hover { background:rgba(255,77,109,.12); border-color:var(--red); }
+  .btn.done { color:var(--green); border-color:rgba(57,255,156,.5); background:rgba(57,255,156,.08); cursor:default; }
+  .btn:disabled { opacity:.55; cursor:not-allowed; }
+  .actions { display:flex; gap:8px; flex-wrap:wrap; }
+
+  /* ---------- tables / lists ---------- */
+  .scroll { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:.93rem; }
+  th, td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); }
+  th { color:var(--muted); font-weight:600; font-size:.8rem; text-transform:uppercase; letter-spacing:.6px; }
+  tr:last-child td { border-bottom:0; }
+  .list-row { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  .list-row:last-child { border-bottom:0; }
+  .empty { text-align:center; padding:34px 10px; color:var(--muted); }
+
+  /* ---------- auth ---------- */
+  .auth-wrap { min-height:100vh; display:grid; place-items:center; padding:20px; }
+  .auth-card { width:100%; max-width:430px; background:rgba(15,15,28,.92); border:1px solid var(--line); border-radius:18px; padding:30px;
+               box-shadow:0 0 0 1px rgba(139,92,255,.25), 0 0 60px rgba(139,92,255,.22); }
+  .auth-card .brand { font-size:1.9rem; text-align:center; }
+  .auth-card .sub { text-align:center; color:var(--muted); margin:4px 0 22px; }
+  .seg { display:grid; grid-template-columns:1fr 1fr; background:#0a0a16; border:1px solid var(--line); border-radius:10px; padding:4px; margin-bottom:14px; }
+  .seg button { background:none; border:0; color:var(--muted); font:inherit; padding:8px; border-radius:7px; cursor:pointer; }
+  .seg button.on { background:linear-gradient(90deg,rgba(0,229,255,.22),rgba(139,92,255,.28)); color:var(--ink); font-weight:700; box-shadow:0 0 14px rgba(0,229,255,.25); }
+  .seg button:focus-visible { outline:2px solid var(--cyan); }
+  .switch { text-align:center; margin:16px 0 0; color:var(--muted); font-size:.92rem; }
+
+  /* ---------- toast ---------- */
+  #toasts { position:fixed; right:16px; bottom:16px; display:grid; gap:8px; z-index:20; }
+  .toast { padding:12px 16px; border-radius:10px; background:#0f0f1c; border:1px solid var(--green); color:var(--green); box-shadow:0 0 20px rgba(57,255,156,.25); max-width:340px; }
+  .toast.err { border-color:var(--red); color:var(--red); box-shadow:0 0 20px rgba(255,77,109,.25); }
+
+  @media (max-width:560px) { .top { padding:12px 14px; } .who small { display:none; } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toasts" role="status" aria-live="polite"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString(undefined, {day:'numeric', month:'short', year:'numeric'}) : '';
+const fmtTime = t => t ? new Date(t.replace(' ', 'T') + 'Z').toLocaleString(undefined, {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : '';
+const CATEGORIES = ['Hackathon', 'Workshop', 'Seminar', 'Webinar', 'Competition', 'Event'];
+
+let token = localStorage.getItem('token');
+let user = JSON.parse(localStorage.getItem('user') || 'null');
+const S = { tab:'events', authMode:'login', authRole:'student', events:[], mine:[], notes:[], resources:[], attendees:[], allocs:[], selEvent:null };
+
+function toast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (type === 'err' ? ' err' : '');
+  t.textContent = msg;
+  $('#toasts').appendChild(t);
+  setTimeout(() => t.remove(), 3400);
+}
+
+async function api(path, method = 'GET', data) {
+  const r = await fetch(path, {
+    method,
+    headers: { 'Content-Type':'application/json', ...(token ? { Authorization:'Bearer ' + token } : {}) },
+    body: data ? JSON.stringify(data) : undefined
+  });
+  const d = await r.json().catch(() => ({}));
+  if (r.status === 401 && token && !path.startsWith('/api/auth/login')) { logout(); throw new Error('Session expired, please log in again'); }
+  if (!r.ok) throw new Error(d.error || 'Something went wrong');
+  return d;
+}
+
+function setSession(t, u) {
+  token = t; user = u;
+  localStorage.setItem('token', t); localStorage.setItem('user', JSON.stringify(u));
+}
+function logout() {
+  token = null; user = null;
+  localStorage.removeItem('token'); localStorage.removeItem('user');
+  S.tab = 'events'; S.selEvent = null;
+  render();
+}
+
+/* ============================ AUTH VIEW ============================ */
+function renderAuth() {
+  const login = S.authMode === 'login', admin = S.authRole === 'admin';
+  $('#app').innerHTML = `
+  <div class="auth-wrap"><div class="auth-card">
+    <div class="brand">CAMPUS<span>HUB</span></div>
+    <p class="sub">Hackathons, seminars, workshops and more</p>
+    <div class="seg" role="group" aria-label="Account type">
+      <button type="button" data-act="role" data-v="student" class="${!admin ? 'on' : ''}">Student</button>
+      <button type="button" data-act="role" data-v="admin" class="${admin ? 'on' : ''}">Admin</button>
+    </div>
+    <form id="authForm">
+      ${login ? '' : `<label>Full name<input name="name" required autocomplete="name"></label>`}
+      <label>Email<input name="email" type="email" required autocomplete="username"></label>
+      <label>Password<input name="password" type="password" minlength="6" required autocomplete="${login ? 'current-password' : 'new-password'}"></label>
+      ${!login && admin ? `<label>Admin access code<input name="admin_code" required placeholder="Given by your institution"></label>` : ''}
+      <button class="btn primary">${login ? 'Login as ' + (admin ? 'Admin' : 'Student') : 'Create ' + (admin ? 'admin' : 'student') + ' account'}</button>
+    </form>
+    <p class="switch">${login
+      ? `No account? <a href="#" data-act="mode" data-v="register">Register</a>`
+      : `Already registered? <a href="#" data-act="mode" data-v="login">Login</a>`}</p>
+  </div></div>`;
+}
+
+/* ============================ SHELL ============================ */
+function shell(tabs, content) {
+  return `
+  <header class="top">
+    <div class="brand">CAMPUS<span>HUB</span></div>
+    <div class="grow"></div>
+    <div class="who"><div>${esc(user.name)} <span class="pill ${user.role}">${user.role}</span></div><small>${esc(user.email)}</small></div>
+    <button class="btn" data-act="logout">Logout</button>
+  </header>
+  <main>
+    <nav class="tabs" aria-label="Sections">${tabs.map(([k, label]) =>
+      `<button class="tab ${S.tab === k ? 'on' : ''}" data-act="tab" data-v="${k}">${label}</button>`).join('')}</nav>
+    ${content}
+  </main>`;
+}
+
+const seatsLeft = e => Math.max(e.capacity - e.registered, 0);
+const catBadge = c => `<span class="badge b-${CATEGORIES.includes(c) ? c : 'Event'}">${esc(c)}</span>`;
+const seatBar = e => {
+  const pct = Math.min(100, Math.round(e.registered / e.capacity * 100));
+  return `<div class="bar ${pct >= 80 ? 'hot' : ''}"><i style="width:${pct}%"></i></div>
+          <div class="muted" style="font-size:.85rem">${e.registered} / ${e.capacity} registered, ${seatsLeft(e)} left</div>`;
+};
+
+/* ============================ STUDENT ============================ */
+function renderStudent() {
+  const mineIds = new Set(S.mine.map(m => m.event_id));
+  let content = '';
+  if (S.tab === 'events') {
+    content = S.events.length ? `<div class="grid">${S.events.map(e => {
+      const reg = mineIds.has(e.id), full = seatsLeft(e) === 0;
+      return `<article class="card">
+        ${catBadge(e.category)}
+        <h3>${esc(e.title)}</h3>
+        <div class="muted">${esc(e.description)}</div>
+        <div class="meta"><span>📅 ${fmtDate(e.event_date)}</span><span>📍 ${esc(e.venue || 'TBA')}</span></div>
+        ${seatBar(e)}
+        <div class="actions" style="margin-top:12px">
+          ${reg ? `<button class="btn done" disabled>✓ Registered</button>`
+                : `<button class="btn primary" data-act="register" data-id="${e.id}" ${full ? 'disabled' : ''}>${full ? 'Event full' : 'Register'}</button>`}
+        </div></article>`;
+    }).join('')}</div>` : `<div class="panel empty">No events yet. Check back soon.</div>`;
+  } else if (S.tab === 'mine') {
+    content = S.mine.length ? `<div class="panel"><h2>Events you registered for</h2>${S.mine.map(m => `
+      <div class="list-row">
+        <div>${catBadge(m.category)} <strong>${esc(m.title)}</strong>
+          <div class="meta" style="margin:4px 0 0"><span>📅 ${fmtDate(m.event_date)}</span><span>📍 ${esc(m.venue || 'TBA')}</span><span>Registered ${fmtTime(m.registered_at)}</span></div></div>
+        <button class="btn danger" data-act="cancel" data-id="${m.event_id}">Cancel</button>
+      </div>`).join('')}</div>`
+      : `<div class="panel empty">You haven't registered for any event yet.</div>`;
+  } else {
+    content = S.notes.length ? `<div class="panel"><h2>Notifications</h2>${S.notes.map(n => `
+      <div class="list-row"><div>🔔 ${esc(n.message)}</div><span class="muted">${fmtTime(n.created_at)}</span></div>`).join('')}</div>`
+      : `<div class="panel empty">No notifications yet.</div>`;
+  }
+  return shell([['events', 'Events'], ['mine', `My registrations (${S.mine.length})`], ['notes', 'Notifications']], content);
+}
+
+/* ============================ ADMIN ============================ */
+function renderAdmin() {
+  let content = '';
+  if (S.tab === 'events') {
+    content = `
+    <section class="panel"><h2>Create an event</h2>
+      <form id="newEvent">
+        <div class="two">
+          <label>Title<input name="title" required></label>
+          <label>Category<select name="category">${CATEGORIES.map(c => `<option>${c}</option>`).join('')}</select></label>
+        </div>
+        <div class="two">
+          <label>Date<input name="event_date" type="date" required></label>
+          <label>Venue<input name="venue" placeholder="Hall, lab or Online"></label>
+          <label>Capacity<input name="capacity" type="number" min="1" value="100" required></label>
+        </div>
+        <label>Description<input name="description" placeholder="One line about the event"></label>
+        <div><button class="btn primary">Publish event</button></div>
+      </form></section>
+    <section class="panel"><h2>All events</h2>${S.events.length ? S.events.map(e => `
+      <div class="list-row">
+        <div>${catBadge(e.category)} <strong>${esc(e.title)}</strong>
+          <div class="meta" style="margin:4px 0 0"><span>📅 ${fmtDate(e.event_date)}</span><span>📍 ${esc(e.venue || 'TBA')}</span><span>👥 ${e.registered} / ${e.capacity}</span></div></div>
+        <div class="actions">
+          <button class="btn" data-act="view" data-id="${e.id}">Attendees &amp; resources</button>
+          <button class="btn danger" data-act="delEvent" data-id="${e.id}">Delete</button>
+        </div></div>`).join('') : `<div class="empty">No events yet. Create the first one above.</div>`}</section>`;
+  } else if (S.tab === 'resources') {
+    content = `
+    <section class="panel"><h2>Add a resource</h2>
+      <form id="newResource"><div class="two">
+        <label>Name<input name="name" required placeholder="Seminar Hall B"></label>
+        <label>Type<select name="type"><option>Hall</option><option>Lab</option><option>Equipment</option><option>Other</option></select></label>
+        <label>Quantity<input name="quantity" type="number" min="1" value="1" required></label>
+      </div><div><button class="btn primary">Add resource</button></div></form></section>
+    <section class="panel"><h2>Allocate a resource to an event</h2>
+      ${S.events.length && S.resources.length ? `
+      <form id="allocate"><div class="two">
+        <label>Event<select name="event_id">${S.events.map(e => `<option value="${e.id}">${esc(e.title)}</option>`).join('')}</select></label>
+        <label>Resource<select name="resource_id">${S.resources.map(r => `<option value="${r.id}">${esc(r.name)} (${r.available} free)</option>`).join('')}</select></label>
+        <label>Quantity<input name="quantity" type="number" min="1" value="1" required></label>
+      </div><div><button class="btn pink">Allocate</button></div></form>` : `<div class="empty">Create at least one event and one resource first.</div>`}</section>
+    <section class="panel"><h2>Resource inventory</h2>${S.resources.length ? `<div class="scroll"><table>
+      <thead><tr><th>Name</th><th>Type</th><th>Total</th><th>Available</th><th></th></tr></thead><tbody>${S.resources.map(r => `
+      <tr><td>${esc(r.name)}</td><td>${esc(r.type)}</td><td>${r.quantity}</td><td style="color:${r.available ? 'var(--green)' : 'var(--red)'}">${r.available}</td>
+      <td><button class="btn danger" data-act="delResource" data-id="${r.id}">Remove</button></td></tr>`).join('')}</tbody></table></div>`
+      : `<div class="empty">No resources yet.</div>`}</section>`;
+  } else {
+    const ev = S.events.find(e => String(e.id) === String(S.selEvent));
+    content = `
+    <section class="panel"><h2>Pick an event</h2>
+      ${S.events.length ? `<label class="sr" for="evPick">Event</label><select id="evPick">${S.events.map(e =>
+        `<option value="${e.id}" ${String(e.id) === String(S.selEvent) ? 'selected' : ''}>${esc(e.title)} (${fmtDate(e.event_date)})</option>`).join('')}</select>`
+        : `<div class="empty">No events yet.</div>`}</section>
+    ${ev ? `
+    <section class="panel"><h2>Registered students (${S.attendees.length} / ${ev.capacity})</h2>
+      ${S.attendees.length ? `<div class="scroll"><table><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Registered</th></tr></thead><tbody>${S.attendees.map((a, i) => `
+        <tr><td>${i + 1}</td><td>${esc(a.name)}</td><td>${esc(a.email)}</td><td>${fmtTime(a.registered_at)}</td></tr>`).join('')}</tbody></table></div>`
+        : `<div class="empty">Nobody has registered yet.</div>`}</section>
+    <section class="panel"><h2>Allocated resources</h2>
+      ${S.allocs.length ? S.allocs.map(a => `
+        <div class="list-row"><div><strong>${esc(a.name)}</strong> <span class="muted">${esc(a.type)}, qty ${a.quantity}</span></div>
+        <button class="btn danger" data-act="delAlloc" data-id="${a.id}">Release</button></div>`).join('')
+        : `<div class="empty">No resources allocated. Use the Resources tab.</div>`}</section>` : ''}`;
+  }
+  return shell([['events', 'Events'], ['resources', 'Resources'], ['attendees', 'Attendees &amp; allocations']], content);
+}
+
+/* ============================ RENDER / LOAD ============================ */
+function render() {
+  if (!user) return renderAuth();
+  $('#app').innerHTML = user.role === 'admin' ? renderAdmin() : renderStudent();
+}
+
+async function load() {
+  if (!user) return render();
+  try {
+    if (user.role === 'student') {
+      [S.events, S.mine, S.notes] = await Promise.all([api('/api/events'), api('/api/registrations/mine'), api('/api/notifications')]);
+    } else {
+      [S.events, S.resources] = await Promise.all([api('/api/events'), api('/api/resources')]);
+      if (S.tab === 'attendees') {
+        if (!S.events.some(e => String(e.id) === String(S.selEvent))) S.selEvent = S.events[0]?.id ?? null;
+        if (S.selEvent) [S.attendees, S.allocs] = await Promise.all([
+          api('/api/registrations?event_id=' + S.selEvent), api('/api/allocations?event_id=' + S.selEvent)]);
+      }
+    }
+    render();
+  } catch (e) { if (user) toast(e.message, 'err'); }
+}
+
+async function act(fn, okMsg) {
+  try { await fn(); if (okMsg) toast(okMsg); await load(); }
+  catch (e) { toast(e.message, 'err'); }
+}
+
+/* ============================ EVENTS (clicks, forms) ============================ */
+document.addEventListener('click', ev => {
+  const el = ev.target.closest('[data-act]');
+  if (!el) return;
+  const { act: a, v, id } = { act: el.dataset.act, v: el.dataset.v, id: el.dataset.id };
+  if (a === 'mode' || a === 'role') {
+    ev.preventDefault();
+    if (a === 'mode') S.authMode = v; else S.authRole = v;
+    render();
+  }
+  else if (a === 'logout') logout();
+  else if (a === 'tab') { S.tab = v; load(); }
+  else if (a === 'register') act(() => api('/api/register', 'POST', { event_id: Number(id) }), 'Successfully registered!');
+  else if (a === 'cancel') act(() => api('/api/register/' + id, 'DELETE'), 'Registration cancelled');
+  else if (a === 'view') { S.selEvent = id; S.tab = 'attendees'; load(); }
+  else if (a === 'delEvent') { if (confirm('Delete this event and all its registrations?')) act(() => api('/api/events/' + id, 'DELETE'), 'Event deleted'); }
+  else if (a === 'delResource') { if (confirm('Remove this resource?')) act(() => api('/api/resources/' + id, 'DELETE'), 'Resource removed'); }
+  else if (a === 'delAlloc') act(() => api('/api/allocations/' + id, 'DELETE'), 'Resource released');
+});
+
+document.addEventListener('change', ev => {
+  if (ev.target.id === 'evPick') { S.selEvent = ev.target.value; load(); }
+});
+
+document.addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const f = Object.fromEntries(new FormData(ev.target));
+  const id = ev.target.id;
+  if (id === 'authForm') {
+    try {
+      const path = S.authMode === 'login' ? '/api/auth/login' : '/api/auth/register';
+      const d = await api(path, 'POST', { ...f, role: S.authRole });
+      setSession(d.token, d.user);
+      S.tab = 'events';
+      toast(S.authMode === 'login' ? 'Welcome back, ' + d.user.name : 'Account created. Welcome, ' + d.user.name + '!');
+      await load();
+    } catch (e) { toast(e.message, 'err'); }
+  } else if (id === 'newEvent') {
+    f.capacity = Number(f.capacity);
+    act(() => api('/api/events', 'POST', f), 'Event published');
+  } else if (id === 'newResource') {
+    f.quantity = Number(f.quantity);
+    act(() => api('/api/resources', 'POST', f), 'Resource added');
+  } else if (id === 'allocate') {
+    f.event_id = Number(f.event_id); f.resource_id = Number(f.resource_id); f.quantity = Number(f.quantity);
+    act(() => api('/api/allocations', 'POST', f), 'Resource allocated');
+  }
+});
+
+load();
+</script>
+</body>
+</html>

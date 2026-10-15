@@ -1,0 +1,14 @@
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location /api/auth          { proxy_pass ${AUTH_URL}; }
+    location /api/events        { proxy_pass ${EVENT_URL}; }
+    location /api/register      { proxy_pass ${REGISTRATION_URL}; }
+    location /api/registrations { proxy_pass ${REGISTRATION_URL}; }
+    location /api/stress        { proxy_pass ${REGISTRATION_URL}; }
+    location /api/resources     { proxy_pass ${RESOURCE_URL}; }
+    location /api/allocations   { proxy_pass ${RESOURCE_URL}; }
+    location /api/notifications { proxy_pass ${NOTIFICATION_URL}; }
+}

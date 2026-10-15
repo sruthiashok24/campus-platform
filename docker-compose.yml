@@ -1,0 +1,102 @@
+services:
+  db:
+    build: ./db
+    environment:
+      POSTGRES_DB: campus
+      POSTGRES_USER: campus
+      POSTGRES_PASSWORD: campus
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U campus -d campus"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  auth-service:
+    build: ./auth-service
+    environment:
+      DB_HOST: db
+      DB_NAME: campus
+      DB_USER: campus
+      DB_PASSWORD: campus
+      JWT_SECRET: change-me-in-cloud
+      ADMIN_CODE: admin123
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [backend]
+
+  event-service:
+    build: ./event-service
+    environment:
+      DB_HOST: db
+      DB_NAME: campus
+      DB_USER: campus
+      DB_PASSWORD: campus
+      JWT_SECRET: change-me-in-cloud
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [backend]
+
+  resource-service:
+    build: ./resource-service
+    environment:
+      DB_HOST: db
+      DB_NAME: campus
+      DB_USER: campus
+      DB_PASSWORD: campus
+      JWT_SECRET: change-me-in-cloud
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [backend]
+
+  notification-service:
+    build: ./notification-service
+    environment:
+      DB_HOST: db
+      DB_NAME: campus
+      DB_USER: campus
+      DB_PASSWORD: campus
+      JWT_SECRET: change-me-in-cloud
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [backend]
+
+  registration-service:
+    build: ./registration-service
+    environment:
+      DB_HOST: db
+      DB_NAME: campus
+      DB_USER: campus
+      DB_PASSWORD: campus
+      JWT_SECRET: change-me-in-cloud
+      EVENT_SERVICE_URL: http://event-service:8000
+      NOTIFICATION_SERVICE_URL: http://notification-service:8000
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [backend]
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    environment:
+      AUTH_URL: http://auth-service:8000
+      EVENT_URL: http://event-service:8000
+      REGISTRATION_URL: http://registration-service:8000
+      RESOURCE_URL: http://resource-service:8000
+      NOTIFICATION_URL: http://notification-service:8000
+    depends_on: [auth-service, event-service, registration-service, resource-service, notification-service]
+    networks: [backend]
+
+networks:
+  backend:
+
+volumes:
+  db-data:
