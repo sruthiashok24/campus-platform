@@ -26,7 +26,7 @@ Services call each other by name (e.g. `http://event-service:8000`).
 Requirements: Docker Desktop (running) and Git.
 
 ```
-git clone https://github.com/23z272/campus-platform.git
+git clone https://github.com/sruthiashok24/campus-platform.git
 cd campus-platform
 docker compose up --build
 ```
